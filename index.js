@@ -52,6 +52,6 @@ function addRules(rulesPassedIn) {
 }
 
 
-moduel.exports = {
+module.exports = {
     addRules: addRules
 };

@@ -1,4 +1,17 @@
-var currentRules = {};
+var currentRules = {},
+    currentPatterns = [],
+    rulesRegex = /^r`(.*)`$/, 
+    tokenRegex = /`(.*?)(\.\.\.)?`/g;
+
+function isDuplicateRegex(){
+    return currentPatterns.some(function(pattern) { 
+        return pattern.regex.toString() === rRule.toString(); 
+    });
+}
+
+function duplicateRule(rule){
+    return console.warn("Duplicate rule: " + rule); 
+}
 
 function addRules(rulesPassedIn) {
     for(var key in rulesPassedIn) {
@@ -7,45 +20,38 @@ function addRules(rulesPassedIn) {
 
         for(var i = 0; i < rules.length; i++) {
             rule = rules[i];
-            
-            if(rule in currentRules) { 
-                return console.warn("Duplicate rule: " + rule); 
-            }
 
-        //     if(rule.indexOf("`") === -1) {
-        //         if(rule in urls) { console.warn("Duplicate beeline rule: " + rule); }
-        //         urls[rule] = handler;
-        //     } else if(rule === "`404`" || rule === "`missing`" || rule === "`default`") {
-        //         if(missing !== default404) { console.warn("Duplicate beeline rule: " + rule); }
-        //         missing = handler;
-        //     } else if(rule === "`405`" || rule === "`missing-verb`" || rule === "`missingVerb`") {
-        //         if(missingVerb !== default405) { console.warn("Duplicate beeline rule: " + rule); }
-        //         missingVerb = handler;
-        //     } else if(rule === "`500`" || rule === "`error`") {
-        //         if(error !== default500) { console.warn("Duplicate beeline rule: " + rule); }
-        //         error = handler;
-        //     } else if(rule === "`generics`") {
-        //         Array.prototype.push.apply(generics, handler);
-        //     } else if(rRegExUrl.test(rule)) {
-        //         var rRule = new RegExp(rRegExUrl.exec(rule)[1]);
-        //         if(patterns.some(function(p) { return p.regex.toString() === rRule.toString(); })) {
-        //             console.warn("Duplicate beeline rule: " + rule);
-        //         }
-        //         patterns.push({ regex: rRule, handler: handler });
-        //     } else if(rToken.test(rule)) {
-        //         var pattern = parseToken(rule, handler);
-        //         if(patterns.some(function(p) { return p.regex.toString() === pattern.regex.toString(); })) {
-        //             console.warn("Duplicate beeline rule: " + rule);
-        //         }
-        //         patterns.push(pattern);
-        //     } else {
-        //         console.warn("Invalid beeline rule: " + rule);
-        //     }
-        // });
+            if(rule.indexOf("`") === -1) {
+                if(rule in currentRules) { 
+                    return duplicateRule(rule);
+                }
+
+                urls[rule] = handler;
+
+            } else if(rulesRegex.test(rule)) {
+                var ruleRegex = new RegExp(rulesRegex.exec(rule)[1]);
+
+                if(isDuplicateRegex(ruleRegex)) {
+                    return duplicateRule(ruleRegex);
+                }
+
+                currentPatterns.push({ regex: ruleRegex, handler: handler });
+            } else if(tokenRegex.test(rule)) {
+                var pattern = parseToken(rule, handler);
+
+                if(isDuplicateRegex(pattern)) {
+                    return duplicateRule(rule);
+                }
+
+                currentPatterns.push(pattern);
+            } else {
+                console.warn("Invalid rule: " + rule);
+            }
+        }
     }
 }
 
 
-moduel.exports = {
+module.exports = {
     addRules: addRules
 };
